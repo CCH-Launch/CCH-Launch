@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AL Home Visit Feedback QA Tool</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f1c40f;
+            --danger-color: #e74c3c;
+            --light-gray: #f5f6fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background: var(--light-gray);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .form-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .form-header .timestamp {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .help-icon {
+            cursor: help;
+            color: var(--secondary-color);
+            margin-left: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .help-icon:hover {
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="time"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .risk-indicator {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .risk-high { 
+            background: var(--danger-color); 
+            color: white; 
+        }
+
+        .risk-medium { 
+            background: var(--warning-color);
+        }
+
+        .risk-low { 
+            background: var(--success-color); 
+            color: white; 
+        }
+
+        .action-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .action-table th,
+        .action-table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .action-table th {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .action-table tr {
+            transition: background-color 0.3s ease;
+        }
+
+        .action-table tr:hover {
+            background-color: var(--light-gray);
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.9em;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .submit-button {
+            background: var(--success-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .delete-row {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .delete-row:hover {
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        .validation-error {
+            border-color: var(--danger-color);
+        }
+
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.8em;
+            margin-top: -8px;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-header">
+            <h1>AL Home Visit Feedback QA Tool</h1>
+            <p>Digital Version 2.0</p>
+            <div class="timestamp" id="currentTimestamp"></div>
+        </div>
+
+        <form id="qaForm">
+            <!-- Section 1: Visit Information -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>1. Visit Information</h2>
+                    <div class="tooltip">
+                        <span class="help-icon">ⓘ</span>
+                        <span class="tooltiptext">Complete all required fields within 8 hours of visit commencement</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="careName">Care Home Name*</label>
+                    <input type="text" id="careName" required>
+                    <div class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="visitDate">Date of Visit*</label>
+                    <input type="date" id="visitDate" required>
+                    <div class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="visitTime">Time Commenced*</label>
+                    <input type="time" id="visitTime" required>
+                    <div class="error-message"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Visit Type*</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="radio" name="visitType" id="planned" required>
+                            <label for="planned">Planned Visit</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="visitType" id="unplanned">
+                            <label for="unplanned">Unplanned Visit</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" name="visitType" id="riskResponse">
+                            <label for="riskResponse">Risk Score Response</label>
+                        </div>
+                    </div>
+                    <div class="error-message"></div>
+                </div>
+            </div>
+
+            <!-- Section 2: Current Service Status -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>2. Current Service Status</h2>
+                    <div class="tooltip">
+                        <span class="help-icon">ⓘ</span>
+                        <span class="tooltiptext">Assessment of current performance and risk levels</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Internal Rating*</label>
+                    <select id="currentRating" required onchange="updateRiskIndicator()">
+                        <option value="">Select Rating</option>
+                        <option value="outstanding">Outstanding (Blue)</option>
+                        <option value="verygood">Very Good (Bright Green)</option>
+                        <option value="good">Good (Green)</option>
+                        <option value="requiring">Requiring Improvements (Amber)</option>
+                        <option value="risk">Risk of Potential Regulatory Breach (Bright Red)</option>
+                    </select>
+                    <div class="error-message"></div>
+                </div>
+
+                <div id="riskIndicator" class="risk-indicator"></div>
+            </div>
+
+            <!-- Section 3: Action Planning -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>3. Action Planning</h2>
+                    <div class="tooltip">
+                        <span class="help-icon">ⓘ</span>
+                        <span class="tooltiptext">Document required actions and follow-up plans</span>
+                    </div>
+                </div>
+
+                <table class="action-table">
+                    <thead>
+                        <tr>
+                            <th>Issue</th>
+                            <th>Action Required</th>
+                            <th>Responsible Person</th>
+                            <th>Target Date</th>
+                            <th>Risk Level</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="actionTableBody">
+                        <tr>
+                            <td><input type="text" name="issue[]" required></td>
+                            <td><input type="text" name="action[]" required></td>
+                            <td><input type="text" name="responsible[]" required></td>
+                            <td><input type="date" name="targetDate[]" required></td>
+                            <td>
+                                <select name="riskLevel[]" onchange="updateRowColor(this)" required>
+                                    <option value="low">Low</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button type="button" class="delete-row" onclick="deleteRow(this)">Delete</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" onclick="addActionRow()" class="submit-button">Add Action</button>
+            </div>
+
+            <button type="submit" class="submit-button">Submit Form</button>
+        </form>
+    </div>
+
+    <script>
+        // Update timestamp
+        function updateTimestamp() {
+            const timestampElement = document.getElementById('currentTimestamp');
+            const now = new Date();
+            timestampElement.textContent = now.toLocaleString();
+        }
+
+        // Update timestamp every second
+        setInterval(updateTimestamp, 1000);
+        updateTimestamp();
+
+        function updateRiskIndicator() {
+            const rating = document.getElementById('currentRating').value;
+            const indicator = document.getElementById('riskIndicator');
+            
+            switch(rating) {
+                case 'outstanding':
+                case 'verygood':
+                    indicator.className = 'risk-indicator risk-low';
+                    indicator.textContent = 'Low Risk';
+                    break;
+                case 'good':
+                    indicator.className = 'risk-indicator risk-medium';
+                    indicator.textContent = 'Medium Risk';
+                    break;
+                case 'requiring':
+                case 'risk':
+                    indicator.className = 'risk-indicator risk-high';
+                    indicator.textContent = 'High Risk';
+                    break;
+                default:
+                    indicator.className = 'risk-indicator';
+                    indicator.textContent = '';
+            }
+        }
+
+        function updateRowColor(select) {
+            const row = select.closest('tr');
+            row.className = `risk-${select.value}`;
+        }
+
+        function deleteRow(button) {
+            const row = button.closest('tr');
+            const tbody = row.parentNode;
+            if (tbody.children.length > 1) {
+                row.remove();
+            } else {
+                alert('Cannot delete the last row');
+            }
+        }
+
+        function addActionRow() {
+            const tbody = document.getElementById('actionTableBody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" name="issue[]" required></td>
+                <td><input type="text" name="action[]" required></td>
+                <td><input type="text" name="responsible[]" required></td>
+                <td><input type="date" name="targetDate[]" required></td>
+                <td>
+                    <select name="riskLevel[]" onchange="updateRowColor(this)" required>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </td>
+                <td>
+                    <button type="button" class="delete-row" onclick="deleteRow(this)">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        function validateForm() {
